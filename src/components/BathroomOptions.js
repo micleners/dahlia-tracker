@@ -71,8 +71,9 @@ const BathroomOptions = ({ accident }) => {
         }),
       };
       const res = await fetch('/.netlify/functions/saveBathroom', options);
-      const data = await res.json();
-      console.log(data);
+      if (res.status === 200) {
+        window.location.reload();
+      }
     } catch (err) {
       console.error(err);
     }

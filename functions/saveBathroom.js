@@ -19,7 +19,7 @@ exports.handler = async (event, context, callback) => {
   const postBody = JSON.parse(event.body);
 
   try {
-    const records = await table.create(postBody);
+    await table.create(postBody);
     return {
       statusCode: 200,
       body: JSON.stringify(postBody),
