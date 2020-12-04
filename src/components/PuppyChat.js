@@ -13,12 +13,13 @@ const Puppy = styled.img`
   }
 `;
 
-const PuppyChat = React.forwardRef(({ children, message, passRef }, ref) => (
-  <SpriteChat ref={passRef} justify="flex-end">
+const PuppyChat = React.forwardRef(({ children, message }, ref) => (
+  <SpriteChat justify="flex-end">
     <ChatBubble direction="right" message={message}>
       {children}
     </ChatBubble>
     <Puppy src={puppy} alt="Puppy Sprite" />
+    <span ref={ref} />
   </SpriteChat>
 ));
 

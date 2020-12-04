@@ -20,11 +20,18 @@ const Dialog1 = ({ optionSelected }) => {
 
   return (
     <>
-      <PuppyChat ref={ref1} message={pupMessage} />
-      {showDialog2 && <HumanChat ref={ref2} message={humanMessage}></HumanChat>}
+      <PuppyChat message={pupMessage}>
+        <span ref={ref1} />
+      </PuppyChat>
+      {showDialog2 && (
+        <HumanChat message={humanMessage}>
+          <span ref={ref2} />
+        </HumanChat>
+      )}
       {showDialog3 && (
-        <HumanChat ref={ref3} message="Here's what happened:">
+        <HumanChat message="Here's what happened:">
           <BathroomOptions />
+          <span ref={ref4} />
         </HumanChat>
       )}
     </>

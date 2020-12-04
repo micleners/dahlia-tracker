@@ -4,17 +4,20 @@ import ActionOptions from './ActionOptions';
 import { useDialogDelay } from '../hooks';
 
 const Dialog1 = ({ optionSelected, setOptionSelected }) => {
-  const [ref1, ref2, showHuman] = useDialogDelay();
+  const [ref1, ref2, showHuman] = useDialogDelay(500);
 
   return (
     <>
-      <PuppyChat ref={ref1} message="Hi human. Wha ha-happened?" />
+      <PuppyChat message="Hi human. Wha ha-happened?">
+        <span ref={ref1} />
+      </PuppyChat>
       {showHuman && (
-        <HumanChat ref={ref2} message="Hi puppers! You dunna">
+        <HumanChat message="Hi puppers! You dunna">
           <ActionOptions
             optionSelected={optionSelected}
             setOptionSelected={setOptionSelected}
           />
+          <span ref={ref2} />
         </HumanChat>
       )}
     </>

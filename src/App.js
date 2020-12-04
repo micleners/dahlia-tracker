@@ -1,15 +1,13 @@
 import styled from 'styled-components';
-import { useRef, useEffect, useState, forwardRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 import PuppyChat from './components/PuppyChat';
 import HumanChat from './components/HumanChat';
-import ActionOptions from './components/ActionOptions';
 
 import './style.css';
 import 'nes.css/css/nes.min.css';
 import Dialog1 from './components/Dialog1';
 import Dialog2 from './components/Dialog2';
-import DialogDelay from './components/DialogDelay';
 
 const Container = styled.div`
   display: flex;
@@ -41,6 +39,7 @@ const MealLog = () => {
 
   return (
     <>
+      <p></p>
       <PuppyChat passRef={myRef1} message="Food?!" />
       {showHuman && (
         <HumanChat message="You always love a meal (:">
