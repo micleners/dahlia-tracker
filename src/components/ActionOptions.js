@@ -16,7 +16,7 @@ const OptionContainer = styled.div`
 `;
 
 const ActionOptions = ({ optionSelected, setOptionSelected }) => {
-  const OptionButton = ({ width, option }) => {
+  const OptionButton = ({ width, option, button }) => {
     let disabled = false;
     const disabledStyles = {};
     if (optionSelected !== '' && optionSelected !== option) {
@@ -24,13 +24,20 @@ const ActionOptions = ({ optionSelected, setOptionSelected }) => {
       disabledStyles['backgroundColor'] = '#d3d3d3';
     }
 
+    const handleClick = (option) => {
+      setOptionSelected('');
+      setTimeout(() => {
+        setOptionSelected(option);
+      }, 1);
+    };
+
     return (
       <button
-        disabled={disabled}
+        // disabled={disabled}
         type="button"
-        className="nes-btn is-primary"
+        className={`nes-btn is-${button}`}
         style={{ width: width || 180, ...disabledStyles }}
-        onClick={() => setOptionSelected(option)}
+        onClick={() => handleClick(option)}
       >
         {option}
       </button>
@@ -40,8 +47,8 @@ const ActionOptions = ({ optionSelected, setOptionSelected }) => {
   return (
     <>
       <OptionContainer>
-        <OptionButton option="Accident" />
-        <OptionButton option="Good Job!" />
+        <OptionButton option="Good Job!" button="success" />
+        <OptionButton option="Accident" button="error" />
       </OptionContainer>
     </>
   );

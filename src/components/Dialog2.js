@@ -5,18 +5,18 @@ import { useDialogDelay } from '../hooks';
 import BathroomOptions from './BathroomOptions';
 
 const Dialog1 = ({ optionSelected }) => {
+  const isAccident = optionSelected === 'Accident';
+
   const [ref1, ref2, showDialog2] = useDialogDelay(500);
   const [ref3, ref4, showDialog3] = useDialogDelay(1000);
 
-  const pupMessage =
-    optionSelected === 'Accident'
-      ? '*sniff* *sniff* Here? '
-      : 'Bork! *wag* *wag*';
+  const pupMessage = isAccident
+    ? '*sniff* *sniff* Here? '
+    : 'Bork! *wag* *wag*';
 
-  const humanMessage =
-    optionSelected === 'Accident'
-      ? "It's okay. You'll get the hang of it!"
-      : 'Good girl ♥️ Have a treat!';
+  const humanMessage = isAccident
+    ? "It's okay. You'll get the hang of it!"
+    : 'Good girl ♥️ Have a treat!';
 
   return (
     <>
@@ -29,8 +29,13 @@ const Dialog1 = ({ optionSelected }) => {
         </HumanChat>
       )}
       {showDialog3 && (
-        <HumanChat message="Here's what happened:">
-          <BathroomOptions />
+        <HumanChat>
+          {isAccident ? (
+            <p className="nes-text is-error">Accident Report:</p>
+          ) : (
+            <p className="nes-text is-success">Success Report:</p>
+          )}
+          <BathroomOptions accident={isAccident} />
           <span ref={ref4} />
         </HumanChat>
       )}
