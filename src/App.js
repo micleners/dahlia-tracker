@@ -8,6 +8,7 @@ import './style.css';
 import 'nes.css/css/nes.min.css';
 import Dialog1 from './components/Dialog1';
 import Dialog2 from './components/Dialog2';
+import RecentActivity from './components/RecentActivity';
 
 const Container = styled.div`
   display: flex;
@@ -117,6 +118,7 @@ function App() {
 
   return (
     <Container className="App">
+      <RecentActivity />
       <Dialog1
         optionSelected={optionSelected}
         setOptionSelected={setOptionSelected}
