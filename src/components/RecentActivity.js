@@ -1,12 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
   text-align: center;
-
-  .emoji {
-    font-size: 20px;
-  }
+  font-size: 12px;
 `;
 
 const ColorClose = styled.div`
@@ -37,7 +34,40 @@ const BrownEx = () => (
 
 const RecentActivity = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // console.log('outer: ', showRecent);
+  const [visits, setVisits] = useState([]);
+
+  useEffect(() => {
+    const loadBathroomVisits = async () => {
+      try {
+        const res = await fetch('/.netlify/functions/getBathroom');
+        const bathroomVisits = await res.json();
+        setVisits(bathroomVisits);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadBathroomVisits();
+  }, []);
+
+  const formatTime = (strDate) => {
+    const date = new Date(strDate);
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    const strTime = hours + ':' + minutes + ' ' + ampm;
+    return strTime;
+  };
+
+  const formatDate = (strDate) => {
+    const date = new Date(strDate);
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    const formattedDate = month + '/' + day;
+    return formattedDate;
+  };
 
   const toggle = () => setIsOpen(!isOpen);
 
@@ -46,33 +76,6 @@ const RecentActivity = () => {
       <div style={{ margin: 20 }}>{isOpen ? 'Hide' : 'Show'} Recent</div>
       {isOpen ? (
         <>
-          {/* <div classNameName="lists">
-            <Row>
-              <span>Time</span>
-              <span>Accident?</span>
-              <span>Pee?</span>
-              <span>Time?</span>
-            </Row>
-            <Row>
-              <span classNameName="time">4:32 pm</span>
-              <span>🔴</span>
-              <span>💧</span>
-              <span> </span>
-            </Row>
-            <Row>
-              <span classNameName="time">5:52 pm</span>
-              <span>🟢</span>
-              <span></span>
-              <span>💩</span>
-            </Row>
-            <Row>
-              <span classNameName="time">7:32 pm</span>
-              <span>🟢</span>
-              <span>💧</span>
-              <span> </span>
-            </Row>
-            <br />
-          </div> */}
           <div
             style={{ margin: '20px 0 40px 0' }}
             className="nes-table-responsive"
@@ -84,50 +87,24 @@ const RecentActivity = () => {
               <thead>
                 <tr>
                   <th>Time</th>
-                  <th>Accident</th>
-                  <th style={{ width: 90 }}>Pee</th>
-                  <th style={{ width: 90 }}>Poop</th>
+                  <th>Oops</th>
+                  <th>Pee</th>
+                  <th>Poo</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>4:32 pm</td>
-                  <td>
-                    <RedEx />
-                  </td>
-                  <td>
-                    <YellowEx />
-                  </td>
-                  <td>
-                    <BrownEx />
-                  </td>
-                </tr>
-                <tr>
-                  <td>5:52 pm</td>
-                  <td>
-                    <ColorClose color="rgb(218 73 72)">
-                      <i className="nes-icon close is-medium"></i>
-                    </ColorClose>
-                  </td>
-                  <td>
-                    <ColorClose color="#ffce00">
-                      <i className="nes-icon close is-medium"></i>
-                    </ColorClose>
-                  </td>
-                  <td>
-                    <ColorClose color="rgb(91 54 30)">
-                      <i className="nes-icon close is-medium"></i>
-                    </ColorClose>
-                  </td>
-                </tr>
-                <tr>
-                  <td>7:32 pm</td>
-                  <td></td>
-                  <td>
-                    <span className="emoji">💩</span>
-                  </td>
-                  <td></td>
-                </tr>
+                {visits.map((visit) => (
+                  <tr key={visit.time}>
+                    <td>
+                      {formatTime(visit.time)}
+                      <br />
+                      {formatDate(visit.time)}
+                    </td>
+                    <td>{visit.accident && <RedEx />}</td>
+                    <td>{visit.pee && <YellowEx />}</td>
+                    <td>{visit.poop && <BrownEx />}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

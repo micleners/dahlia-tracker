@@ -22,16 +22,14 @@ const parseTime = (setDate, time) => {
   const date = new Date();
 
   let day = date.getDate(),
-    month = date.getMonth() + 1,
+    month = date.getMonth(),
     year = date.getFullYear();
 
   month = (month < 10 ? '0' : '') + month;
   day = (day < 10 ? '0' : '') + day;
 
   const [hour, minute] = time.split(':');
-
   const newDate = new Date(year, month, day, hour, minute, 0);
-
   setDate(newDate);
 };
 
@@ -48,10 +46,7 @@ const BathroomOptions = ({ accident }) => {
     parseTime(setDate, event.target.value);
   };
 
-  console.log(date);
-  console.log(time);
-
-  const handleSumbit = async () => {
+  const handleSubmit = async () => {
     setSelectWarning(false);
     if (!pee && !poop) {
       setTimeout(() => {
@@ -138,7 +133,7 @@ const BathroomOptions = ({ accident }) => {
       <button
         type="button"
         className="nes-btn is-primary"
-        onClick={handleSumbit}
+        onClick={handleSubmit}
       >
         Log it!
       </button>

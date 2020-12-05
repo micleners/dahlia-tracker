@@ -12,23 +12,29 @@ exports.handler = async (event, context, callback) => {
   try {
     const records = await table
       .select({
-        sort: [{ field: 'score', direction: 'desc' }],
-        filterByFormula: `AND(name != '', score != 0)`,
+        sort: [{ field: 'Time', direction: 'desc' }],
+        filterByFormula: `
+          DATETIME_DIFF(DATEADD(TODAY(),0,'d'),Time,'d')<=1
+          `,
       })
       .firstPage();
     const formattedRecords = records.map((record) => ({
-      id: record.id,
-      fields: record.fields,
+      notes: record.fields.Notes,
+      pee: record.fields.Pee,
+      poop: record.fields.Poop,
+      time: record.fields.Time,
+      accident: record.fields.Accident,
     }));
     return {
       statusCode: 200,
       body: JSON.stringify(formattedRecords),
     };
   } catch (err) {
+    console.log(err);
     return {
       statusCode: 500,
       body: JSON.stringify({
-        err: 'Error occurred while getting the high scores',
+        err: 'Error occurred while getting the history',
       }),
     };
   }
