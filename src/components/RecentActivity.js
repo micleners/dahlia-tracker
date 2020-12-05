@@ -46,8 +46,10 @@ const RecentActivity = () => {
         console.error(err);
       }
     };
-    loadBathroomVisits();
-  }, []);
+    if (isOpen === true) {
+      loadBathroomVisits();
+    }
+  }, [isOpen]);
 
   const formatTime = (strDate) => {
     const date = new Date(strDate);
