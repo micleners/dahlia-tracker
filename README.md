@@ -13,9 +13,11 @@ npm install
 npm run dev:netlify
 ```
 
-Open http://localhost:8888. In local development the functions use sample data instead of Airtable (`AIRTABLE_MOCK=true`, set in `netlify.toml`). Saved entries are kept in `dahlia-tracker-mock.json` in your OS temp folder; delete it to reset.
+Open http://localhost:8888. This runs the app through the Netlify CLI, as on Netlify.
 
-`npm run dev` starts the frontend only, without the functions.
+If the Netlify CLI is unavailable, use `npm run dev` (http://localhost:5173). Vite serves the same functions from `functions/` directly.
+
+Both use sample data instead of Airtable (`AIRTABLE_MOCK=true`). Saved entries are kept in `dahlia-tracker-mock.json` in your OS temp folder; delete it to reset. To use real Airtable locally, set `AIRTABLE_MOCK=false` plus the variables below.
 
 ## Test and build
 
