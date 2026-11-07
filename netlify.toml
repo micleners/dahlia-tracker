@@ -5,3 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+# Local development (`npm run dev:netlify`): serve sample data instead of Airtable.
+[context.dev.environment]
+  AIRTABLE_MOCK = "true"
