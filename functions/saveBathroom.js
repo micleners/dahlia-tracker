@@ -1,5 +1,4 @@
 const Airtable = require('airtable');
-require('dotenv').config();
 
 Airtable.configure({
   apiKey: process.env.AIRTABLE_API_KEY,
