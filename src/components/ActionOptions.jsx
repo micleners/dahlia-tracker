@@ -17,10 +17,8 @@ const OptionContainer = styled.div`
 
 const ActionOptions = ({ optionSelected, setOptionSelected }) => {
   const OptionButton = ({ width, option, button }) => {
-    let disabled = false;
     const disabledStyles = {};
     if (optionSelected !== '' && optionSelected !== option) {
-      disabled = true;
       disabledStyles['backgroundColor'] = '#d3d3d3';
     }
 

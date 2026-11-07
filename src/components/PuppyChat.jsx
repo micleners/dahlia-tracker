@@ -14,7 +14,7 @@ const Puppy = styled.img`
 `;
 
 const PuppyChat = React.forwardRef(({ children, message }, ref) => (
-  <SpriteChat justify="flex-end">
+  <SpriteChat $justify="flex-end">
     <ChatBubble direction="right" message={message}>
       {children}
     </ChatBubble>

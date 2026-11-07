@@ -8,26 +8,26 @@ const Container = styled.div`
 
 const ColorClose = styled.div`
   .close::before {
-    color: ${(props) => props.color};
+    color: ${(props) => props.$color};
   }
 `;
 
 const Ex = () => <i className="nes-icon close is-small"></i>;
 
 const RedEx = () => (
-  <ColorClose color="rgb(218 73 72)">
+  <ColorClose $color="rgb(218 73 72)">
     <Ex />
   </ColorClose>
 );
 
 const YellowEx = () => (
-  <ColorClose color="#ffce00">
+  <ColorClose $color="#ffce00">
     <Ex />
   </ColorClose>
 );
 
 const BrownEx = () => (
-  <ColorClose color="rgb(91 54 30)">
+  <ColorClose $color="rgb(91 54 30)">
     <Ex />
   </ColorClose>
 );

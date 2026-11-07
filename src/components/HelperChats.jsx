@@ -4,7 +4,7 @@ export const SpriteChat = styled.div`
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  justify-content: ${(props) => props.justify};
+  justify-content: ${(props) => props.$justify};
 `;
 
 export const ChatBubble = ({ direction, message, children }) => (
