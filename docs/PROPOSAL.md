@@ -1,82 +1,62 @@
-# Proposal: Restore the Dahlia Tracker
+# Proposal: Restore and Upgrade the Dahlia Tracker
 
-**Status:** Draft for review. No application code has been changed.
+**Status:** Phase 1 is implemented on branch `claude/happy-einstein-mntpu3` and runs against mock data. It still needs a review of the UI, a live test against Airtable, and a Netlify deploy.
 
 ## Goal
 
-Get the app building and deploying on Netlify again, reconnect it to the existing Airtable base, and show historical data. Make the fewest changes possible, then improve the app in later phases.
+Get the app building and deploying on Netlify on a supported Node.js version, reconnect it to the existing Airtable base, and show historical data.
 
-## Current state (tested November 2026)
+## Why the build failed
 
-| Area | Finding | Impact |
+| Area | Finding |
+| --- | --- |
+| Node version | Create React App 4 can't build on Node 18 or later. Netlify now defaults to Node 24. |
+| Lint in CI | Netlify sets `CI=true`, which turns 5 lint warnings into build errors. |
+| Lockfiles | `yarn.lock` was out of date and is used ahead of `package-lock.json`. |
+| Airtable auth | Airtable stopped accepting API keys in February 2024. A Personal Access Token is required. |
+| History view | `getBathroom` returned only the last ~1 day, up to 100 records. |
+
+## Approaches evaluated
+
+| Approach | Result | Decision |
 | --- | --- | --- |
-| Node version | `react-scripts` 4.0.1 fails on Node 18, 20 and 22. It builds on Node 16. Netlify now defaults to Node 22. | **Build fails** |
-| Lint in CI | Netlify sets `CI=true`, which turns lint warnings into errors. `src/components/Dialog2.js` has 2 unused variables. | **Build fails** |
-| Lockfiles | Both `yarn.lock` and `package-lock.json` are committed. `yarn.lock` is out of date (it's missing `airtable`). Netlify picks Yarn when `yarn.lock` exists. | **Install is unreliable** |
-| Airtable auth | Airtable stopped accepting API keys (`AIRTABLE_API_KEY`) in February 2024. | **Data calls fail** |
-| Functions | `exports.handler` (Functions v1) is still supported. `dotenv` is used but not listed in `package.json`. | Works, but fragile |
-| History view | `getBathroom` returns only the last ~1 day and at most 100 records. | Old data is hidden |
+| A. Pin Node 16, keep Create React App | Builds. Node 16 is end-of-life, and Functions would run on a different Node version than the build. 212 known vulnerabilities remain. | Rejected |
+| B. Move the build to Vite on Node 24 | Builds and looks the same as before. 0 known vulnerabilities. 24 files changed, with no logic changes. | **Adopted** |
+| C. Rewrite the Functions as Netlify Functions v2 using `fetch` | Removes the `airtable` library. Adds input validation and clear error messages. | **Adopted** |
 
-## Phase 1: Restore (minimum changes)
+## Phase 1: Restore on current versions (done, pending review)
 
-### Code changes (one pull request)
+- **Build:** Vite 8, Node 24 (`netlify.toml`), single npm lockfile.
+- **Frontend:** React 19, styled-components 6. No behavior changes.
+- **Functions:** Netlify Functions v2 calling the Airtable REST API directly.
+  - `getBathroom?days=N` defaults to 30 days, and `days=all` returns everything. It follows Airtable's paging.
+  - `saveBathroom` validates the submitted entry.
+- **Local mock:** `npm run dev:netlify` serves sample data with no Airtable account.
+- **Tests:** `npm test` runs 17 function tests.
+- **Docs:** the README has setup, environment variables, and deploy steps.
 
-1. **Pin Node 16** in `netlify.toml`:
-   ```toml
-   [build]
-     command = "npm run build"
-     functions = "functions"
+### Verified
 
-   [build.environment]
-     NODE_VERSION = "16"
-   ```
-2. **Use one lockfile.** Delete `yarn.lock` and keep `package-lock.json`.
-3. **Fix the 2 lint warnings** in `src/components/Dialog2.js`.
-4. **Remove `require('dotenv').config()`** from both functions. Netlify adds environment variables itself, in production and in `netlify dev`.
-5. **Show history.** Change `getBathroom` to return more than one day, with paging. The time window needs a decision (see Decisions).
+- `CI=true npm run build` passes on Node 24, and `npm audit` reports 0 vulnerabilities.
+- In a browser against mock data: Recent Activity loads, logging an entry saves it, and the new entry appears after reload. No console errors.
+- Not yet verified: a live Airtable connection and a Netlify deploy.
 
-### Manual setup (owner)
+## Owner actions
 
-1. In Airtable, confirm the base and table still exist.
-2. Create a **Personal Access Token** at airtable.com/create/tokens:
-   - Scopes: `data.records:read`, `data.records:write`
-   - Access: this base only
-3. In Netlify, go to **Site configuration → Environment variables** and set:
-   - `AIRTABLE_API_KEY`: the new token (same variable name, so the code doesn't change)
-   - `AIRTABLE_BASE`: the base ID (starts with `app…`)
-   - `AIRTABLE_TABLE`: the table name
-4. Trigger a deploy and check that the form saves and Recent Activity loads.
-
-### Risk and fallback
-
-Node 16 is end-of-life. If Netlify won't install it, go straight to Phase 2, step 1. That's a small, mechanical change for an app of about 10 components.
-
-## Phase 2: Update dependencies and build tools
-
-1. Replace Create React App with **Vite**. This removes the Node 16 pin and lets the app build on the current Node LTS.
-2. Upgrade React 17 to React 19, plus `styled-components` and the testing libraries.
-3. Upgrade `airtable` to the latest version, or replace it with direct `fetch` calls.
-4. Optionally move the functions to Netlify Functions v2 (`export default async (req) => Response`).
-5. Replace the default README with short setup and deploy instructions.
-
-## Phase 3: Login and separate data per user
-
-Netlify Identity is deprecated, so use a free external login provider. Confirm current free-tier limits before choosing.
-
-| Option | Effort | Notes |
-| --- | --- | --- |
-| Clerk (recommended) | Low | Prebuilt login UI; verify tokens in functions |
-| Supabase Auth + Postgres | Medium | Adds a database with row-level security; Airtable would no longer be needed |
-| Auth0 | Medium | Mature, more configuration |
-
-Data model on Airtable: add a `UserId` field, set it in the function from the verified token, and filter by it on read. Airtable's free plan allows 1,000 records per base and 1,000 API calls per month. If usage grows past that, this phase is the point to move to Supabase.
-
-## Phase 4: TBD
-
-To be defined after Phase 1 ships.
+1. Confirm that the Airtable base and table still exist. The fields are `Time`, `Notes`, `Pee`, `Poop` and `Accident`.
+2. Create a Personal Access Token:
+   - scopes `data.records:read` and `data.records:write`
+   - access limited to this base
+3. In Netlify, set `AIRTABLE_TOKEN`, `AIRTABLE_BASE` and `AIRTABLE_TABLE`. Remove `AIRTABLE_API_KEY`.
+4. Review the UI locally (`npm install && npm run dev:netlify`) or from a Netlify deploy preview of the branch.
 
 ## Decisions needed
 
-1. **History window:** last 7 days, last 30 days, or all records with paging?
-2. **Airtable access:** confirm the base is still available. If it isn't, Phase 1 needs a new table with the fields `Time`, `Notes`, `Pee`, `Poop`, `Accident`.
-3. **Phase 1 approach:** is pinning Node 16 acceptable for now, or should we do the Vite migration in Phase 1?
+1. **History window:** keep 30 days as the default, or pick another?
+2. **Save validation:** the save function now requires Pee or Poop to be checked, which matches the form. Keep it?
+
+## Next phases
+
+- **Phase 2: Login and separate data per user.** Netlify Identity is deprecated, so use an external provider; Clerk is the lowest effort. Add a `UserId` field and filter by it in the Functions.
+  - Airtable's free plan allows 1,000 records per base and 1,000 API calls per month. If usage outgrows that, move to Supabase (auth plus Postgres) in this phase.
+- **Phase 3: TBD.** Candidates: paging or date filters in Recent Activity, and editing or deleting entries.
