@@ -105,6 +105,29 @@ test('GET bad days -> 400 without calling Airtable', async () => {
   assert.equal(calls.length, 0);
 });
 
+test('GET before sets maxRecords=10 and a normalized IS_BEFORE formula', async () => {
+  replies.push(reply(200, { records: [] }));
+  const res = await get('?before=2020-12-06T12:56:32.941Z');
+  assert.equal(res.status, 200);
+  const { searchParams } = calls[0].url;
+  assert.equal(searchParams.get('maxRecords'), '10');
+  assert.equal(searchParams.get('filterByFormula'), "IS_BEFORE({Time}, DATETIME_PARSE('2020-12-06T12:56:32.941Z'))");
+  assert.equal(searchParams.get('sort[0][direction]'), 'desc');
+
+  replies.push(reply(200, { records: [] }));
+  await get('?before=2020-12-06T07:56:32-05:00');
+  assert.match(calls[1].url.searchParams.get('filterByFormula'), /'2020-12-06T12:56:32\.000Z'\)\)$/);
+});
+
+test('GET bad before, or before with days -> 400 without calling Airtable', async () => {
+  const bad = ['?before=abc', '?before=', "?before=2020-01-01')),TRUE(", '?before=2020-12-06T12:56:32.941Z&days=7'];
+  for (const qs of bad) {
+    const res = await get(qs);
+    assert.equal(res.status, 400, qs);
+  }
+  assert.equal(calls.length, 0);
+});
+
 test('GET POST method -> 405', async () => {
   const res = await getBathroom(new Request('http://localhost/x', { method: 'POST', body: '{}' }));
   assert.equal(res.status, 405);
@@ -242,6 +265,11 @@ test('mock mode: serves sample data and keeps saved records', async () => {
   assert.equal(recent.length, 6);
   assert.equal(lastMonth.length, 5);
   assert.equal(all.length, 6);
+
+  const older = await (
+    await getBathroom(new Request(`http://x/.netlify/functions/getBathroom?before=${encodeURIComponent(all[2].time)}`))
+  ).json();
+  assert.deepEqual(older, all.slice(3));
 
   const saved = await saveBathroom(
     new Request('http://x/.netlify/functions/saveBathroom', {

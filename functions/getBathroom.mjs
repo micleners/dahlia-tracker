@@ -1,6 +1,9 @@
 // GET /.netlify/functions/getBathroom?days=30
 //   days: whole number of days to look back, or "all".
 //   Without days, returns the 10 most recent entries.
+// GET /.netlify/functions/getBathroom?before=2026-11-07T12:00:00.000Z
+//   before: ISO date-time; returns the 10 newest entries older than it.
+//   Cannot be combined with days.
 // Responds with [{ notes, pee, poop, time, accident }], newest first.
 import { airtableFetch, errorResponse, getConfig, HttpError, json } from './_shared/airtable.mjs';
 
@@ -20,12 +23,23 @@ function parseDays(raw) {
   return days;
 }
 
+function parseBefore(raw) {
+  if (raw === null) return undefined;
+  const ms = Date.parse(raw);
+  if (Number.isNaN(ms)) throw new HttpError(400, 'before must be an ISO date-time');
+  // Re-serialize so raw input never reaches the Airtable formula.
+  return new Date(ms).toISOString();
+}
+
 export default async (req) => {
   if (req.method !== 'GET') {
     return json({ err: 'That method is not allowed' }, 405, { allow: 'GET' });
   }
   try {
-    const days = parseDays(new URL(req.url).searchParams.get('days'));
+    const query = new URL(req.url).searchParams;
+    const days = parseDays(query.get('days'));
+    const before = parseBefore(query.get('before'));
+    if (before !== undefined && days !== undefined) throw new HttpError(400, 'use before or days, not both');
     const { token, url } = getConfig();
 
     const params = new URLSearchParams();
@@ -33,7 +47,10 @@ export default async (req) => {
     params.set('sort[0][field]', 'Time');
     params.set('sort[0][direction]', 'desc');
     for (const field of FIELDS) params.append('fields[]', field);
-    if (days === undefined) {
+    if (before !== undefined) {
+      params.set('maxRecords', String(DEFAULT_LIMIT));
+      params.set('filterByFormula', `IS_BEFORE({Time}, DATETIME_PARSE('${before}'))`);
+    } else if (days === undefined) {
       params.set('maxRecords', String(DEFAULT_LIMIT));
     } else if (days !== null) {
       params.set('filterByFormula', `DATETIME_DIFF(NOW(),{Time},'days')<=${days}`);

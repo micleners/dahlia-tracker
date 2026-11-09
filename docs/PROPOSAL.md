@@ -30,6 +30,7 @@ Get the app building and deploying on Netlify on a supported Node.js version, re
 - **Frontend:** React 19, styled-components 6. No behavior changes.
 - **Functions:** Netlify Functions v2 calling the Airtable REST API directly.
   - `getBathroom` returns the 10 most recent entries by default; `?days=N` returns the last N days, and `days=all` returns everything. It follows Airtable's paging.
+  - `?before=<ISO time>` returns the 10 newest entries older than that time; Recent Activity uses it for a "Load more" button.
   - `saveBathroom` validates the submitted entry.
 - **Local mock:** `npm run dev:netlify` serves sample data with no Airtable account.
 - **Tests:** `npm test` runs 17 function tests.
@@ -58,4 +59,4 @@ Get the app building and deploying on Netlify on a supported Node.js version, re
 
 - **Phase 2: Login and separate data per user.** Netlify Identity is deprecated, so use an external provider; Clerk is the lowest effort. Add a `UserId` field and filter by it in the Functions.
   - Airtable's free plan allows 1,000 records per base and 1,000 API calls per month. If usage outgrows that, move to Supabase (auth plus Postgres) in this phase.
-- **Phase 3: TBD.** Candidates: paging or date filters in Recent Activity, and editing or deleting entries.
+- **Phase 3: TBD.** Candidates: date filters in Recent Activity, and editing or deleting entries.

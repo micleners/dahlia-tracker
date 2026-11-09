@@ -1,6 +1,6 @@
 # Plan: "Load more" in Recent Activity
 
-**Status:** planned, not started. Branch `claude/happy-einstein-mntpu3`.
+**Status:** Implemented; pending review. Branch `claude/happy-einstein-mntpu3`.
 
 ## Goal
 

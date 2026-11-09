@@ -1,5 +1,5 @@
 // Local stand-in for the Airtable REST API, used when AIRTABLE_MOCK=true.
-// Supports what the functions use: list (days filter, sort by Time desc,
+// Supports what the functions use: list (days or before filter, sort by Time desc,
 // maxRecords, pageSize/offset) and create. Each function call runs in a fresh process, so
 // records are kept in a JSON file in the OS temp folder (or AIRTABLE_MOCK_FILE).
 // Delete it to reset.
@@ -34,9 +34,11 @@ function load() {
 function list(searchParams) {
   const days = searchParams.get('filterByFormula')?.match(/<=(\d+)$/)?.[1];
   const cutoff = Date.now() - Number(days) * 24 * HOUR;
+  const before = searchParams.get('filterByFormula')?.match(/IS_BEFORE\(.*DATETIME_PARSE\('([^']+)'\)\)/)?.[1];
   const time = (r) => Date.parse(r.fields.Time) || 0;
   const matches = load()
     .filter((r) => !days || time(r) >= cutoff)
+    .filter((r) => !before || time(r) < Date.parse(before))
     .sort((a, b) => time(b) - time(a))
     .slice(0, Number(searchParams.get('maxRecords')) || undefined);
 

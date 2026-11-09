@@ -32,9 +32,14 @@ const BrownEx = () => (
   </ColorClose>
 );
 
+// Must match DEFAULT_LIMIT in functions/getBathroom.mjs.
+const PAGE_SIZE = 10;
+
 const RecentActivity = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [visits, setVisits] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const loadBathroomVisits = async () => {
@@ -42,6 +47,7 @@ const RecentActivity = () => {
         const res = await fetch('/.netlify/functions/getBathroom');
         const bathroomVisits = await res.json();
         setVisits(bathroomVisits);
+        setHasMore(bathroomVisits.length === PAGE_SIZE);
       } catch (err) {
         console.error(err);
       }
@@ -73,9 +79,30 @@ const RecentActivity = () => {
 
   const toggle = () => setIsOpen(!isOpen);
 
+  // Asks for the 10 entries older than the last row shown.
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const last = visits[visits.length - 1];
+      const res = await fetch(
+        `/.netlify/functions/getBathroom?before=${encodeURIComponent(last.time)}`,
+      );
+      if (!res.ok) throw new Error(`Load more failed (${res.status})`);
+      const page = await res.json();
+      setVisits((v) => [...v, ...page]);
+      setHasMore(page.length === PAGE_SIZE);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   return (
-    <Container onClick={toggle}>
-      <div style={{ margin: 20 }}>{isOpen ? 'Hide' : 'Show'} Recent</div>
+    <Container>
+      <div style={{ margin: 20, cursor: 'pointer' }} onClick={toggle}>
+        {isOpen ? 'Hide' : 'Show'} Recent
+      </div>
       {isOpen ? (
         <>
           <div
@@ -109,6 +136,16 @@ const RecentActivity = () => {
                 ))}
               </tbody>
             </table>
+            {hasMore && (
+              <button
+                type="button"
+                className="nes-btn"
+                disabled={loadingMore}
+                onClick={loadMore}
+              >
+                {loadingMore ? 'Loading...' : 'Load more'}
+              </button>
+            )}
           </div>
         </>
       ) : (
