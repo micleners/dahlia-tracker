@@ -48,7 +48,7 @@ const post = (payload, init = {}) =>
     }),
   );
 
-test('GET default is 30 days, sorted desc, auth header, mapped shape', async () => {
+test('GET default is 10 most recent, sorted desc, auth header, mapped shape', async () => {
   replies.push(reply(200, { records: [rec(1), { id: 'r2', fields: { Poop: true, Accident: true } }] }));
   const res = await get();
   assert.equal(res.status, 200);
@@ -59,7 +59,8 @@ test('GET default is 30 days, sorted desc, auth header, mapped shape', async () 
   const { url, init } = calls[0];
   assert.equal(url.origin + url.pathname, 'https://api.airtable.com/v0/appBASE/Bathroom%20Log');
   assert.equal(init.headers.authorization, `Bearer ${TOKEN}`);
-  assert.equal(url.searchParams.get('filterByFormula'), "DATETIME_DIFF(NOW(),{Time},'days')<=30");
+  assert.equal(url.searchParams.get('maxRecords'), '10');
+  assert.equal(url.searchParams.has('filterByFormula'), false);
   assert.equal(url.searchParams.get('sort[0][field]'), 'Time');
   assert.equal(url.searchParams.get('sort[0][direction]'), 'desc');
   assert.deepEqual(url.searchParams.getAll('fields[]'), ['Notes', 'Pee', 'Poop', 'Time', 'Accident']);
@@ -77,6 +78,7 @@ test('GET days=30 explicit', async () => {
   replies.push(reply(200, { records: [] }));
   await get('?days=30');
   assert.match(calls[0].url.searchParams.get('filterByFormula'), /<=30$/);
+  assert.equal(calls[0].url.searchParams.has('maxRecords'), false);
 });
 
 test('GET days=all has no filter and follows offset pagination', async () => {
@@ -236,7 +238,9 @@ test('mock mode: serves sample data and keeps saved records', async () => {
 
   const recent = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom'))).json();
   const all = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=all'))).json();
-  assert.equal(recent.length, 5);
+  const lastMonth = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=30'))).json();
+  assert.equal(recent.length, 6);
+  assert.equal(lastMonth.length, 5);
   assert.equal(all.length, 6);
 
   const saved = await saveBathroom(
@@ -247,6 +251,6 @@ test('mock mode: serves sample data and keeps saved records', async () => {
   );
   assert.equal(saved.status, 200);
   const after = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom'))).json();
-  assert.equal(after.length, 6);
+  assert.equal(after.length, 7);
   assert.equal(after[0].notes, 'new');
 });

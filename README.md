@@ -44,5 +44,5 @@ The table needs these fields: `Time` (date and time), `Notes` (text), `Pee`, `Po
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /.netlify/functions/getBathroom?days=30` | Entries from the last N days, newest first. `days=all` returns everything. Defaults to 30. |
+| `GET /.netlify/functions/getBathroom?days=30` | Entries from the last N days, newest first. `days=all` returns everything. Without `days`, returns the 10 most recent. |
 | `POST /.netlify/functions/saveBathroom` | Saves one entry: `{ "Time", "Notes", "Pee", "Poop", "Accident" }` |

@@ -1,9 +1,10 @@
 // GET /.netlify/functions/getBathroom?days=30
-//   days: whole number of days to look back (default 30), or "all".
+//   days: whole number of days to look back, or "all".
+//   Without days, returns the 10 most recent entries.
 // Responds with [{ notes, pee, poop, time, accident }], newest first.
 import { airtableFetch, errorResponse, getConfig, HttpError, json } from './_shared/airtable.mjs';
 
-const DEFAULT_DAYS = 30;
+const DEFAULT_LIMIT = 10;
 const MAX_DAYS = 3650;
 // Safety cap of 50 pages x 100 records. Pages are fetched one after another,
 // which stays under Airtable's limit of 5 requests per second per base.
@@ -11,7 +12,7 @@ const MAX_PAGES = 50;
 const FIELDS = ['Notes', 'Pee', 'Poop', 'Time', 'Accident'];
 
 function parseDays(raw) {
-  if (raw === null || raw === '') return DEFAULT_DAYS;
+  if (raw === null || raw === '') return undefined;
   if (raw.toLowerCase() === 'all') return null;
   if (!/^\d+$/.test(raw)) throw new HttpError(400, 'days must be a positive whole number or "all"');
   const days = Number(raw);
@@ -32,7 +33,9 @@ export default async (req) => {
     params.set('sort[0][field]', 'Time');
     params.set('sort[0][direction]', 'desc');
     for (const field of FIELDS) params.append('fields[]', field);
-    if (days !== null) {
+    if (days === undefined) {
+      params.set('maxRecords', String(DEFAULT_LIMIT));
+    } else if (days !== null) {
       params.set('filterByFormula', `DATETIME_DIFF(NOW(),{Time},'days')<=${days}`);
     }
 

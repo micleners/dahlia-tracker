@@ -29,7 +29,7 @@ Get the app building and deploying on Netlify on a supported Node.js version, re
 - **Build:** Vite 8, Node 24 (`netlify.toml`), single npm lockfile.
 - **Frontend:** React 19, styled-components 6. No behavior changes.
 - **Functions:** Netlify Functions v2 calling the Airtable REST API directly.
-  - `getBathroom?days=N` defaults to 30 days, and `days=all` returns everything. It follows Airtable's paging.
+  - `getBathroom` returns the 10 most recent entries by default; `?days=N` returns the last N days, and `days=all` returns everything. It follows Airtable's paging.
   - `saveBathroom` validates the submitted entry.
 - **Local mock:** `npm run dev:netlify` serves sample data with no Airtable account.
 - **Tests:** `npm test` runs 17 function tests.
@@ -52,8 +52,7 @@ Get the app building and deploying on Netlify on a supported Node.js version, re
 
 ## Decisions needed
 
-1. **History window:** keep 30 days as the default, or pick another?
-2. **Save validation:** the save function now requires Pee or Poop to be checked, which matches the form. Keep it?
+1. **Save validation:** the save function now requires Pee or Poop to be checked, which matches the form. Keep it?
 
 ## Next phases
 
