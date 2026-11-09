@@ -262,10 +262,10 @@ test('mock mode: serves sample data and keeps saved records', async () => {
   const recent = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom'))).json();
   const all = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=all'))).json();
   const last30Days = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=30'))).json();
-  // 6 samples, under the 10-entry limit, so the default returns them all.
-  assert.equal(recent.length, 6);
-  assert.equal(last30Days.length, 5);
-  assert.equal(all.length, 6);
+  // 12 samples, 11 within 30 days; the default stops at the 10 newest.
+  assert.equal(all.length, 12);
+  assert.equal(last30Days.length, 11);
+  assert.deepEqual(recent, all.slice(0, 10));
 
   const older = await (
     await getBathroom(new Request(`http://x/.netlify/functions/getBathroom?before=${encodeURIComponent(all[2].time)}`))
@@ -280,6 +280,7 @@ test('mock mode: serves sample data and keeps saved records', async () => {
   );
   assert.equal(saved.status, 200);
   const after = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom'))).json();
-  assert.equal(after.length, 7);
+  assert.equal(after.length, 10);
   assert.equal(after[0].notes, 'new');
+  assert.deepEqual(after.slice(1), all.slice(0, 9));
 });

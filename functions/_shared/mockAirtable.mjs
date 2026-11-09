@@ -19,7 +19,13 @@ const sampleRecords = () => [
   { hoursAgo: 1, Pee: true, Poop: false, Accident: false, Notes: 'Morning walk' },
   { hoursAgo: 5, Pee: true, Poop: true, Accident: false, Notes: '' },
   { hoursAgo: 9, Pee: true, Poop: false, Accident: true, Notes: 'Kitchen rug' },
+  { hoursAgo: 13, Pee: true, Poop: false, Accident: false, Notes: '' },
+  { hoursAgo: 17, Pee: true, Poop: true, Accident: false, Notes: 'After dinner' },
+  { hoursAgo: 26, Pee: true, Poop: false, Accident: false, Notes: '' },
   { hoursAgo: 30, Pee: false, Poop: true, Accident: false, Notes: '' },
+  { hoursAgo: 48, Pee: true, Poop: false, Accident: true, Notes: 'Hallway' },
+  { hoursAgo: 72, Pee: true, Poop: true, Accident: false, Notes: '' },
+  { hoursAgo: 24 * 5, Pee: true, Poop: false, Accident: false, Notes: '' },
   { hoursAgo: 24 * 10, Pee: true, Poop: false, Accident: false, Notes: '10 days ago' },
   { hoursAgo: 24 * 45, Pee: true, Poop: true, Accident: true, Notes: '45 days ago' },
 ].map(({ hoursAgo, ...fields }) =>
