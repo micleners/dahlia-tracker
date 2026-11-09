@@ -1,70 +1,49 @@
-# Getting Started with Create React App
+# Dahlia Tracker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A small app for logging a puppy's potty breaks. Built with React and Vite, hosted on Netlify, and stores data in Airtable through Netlify Functions.
 
-## Available Scripts
+## Requirements
 
-In the project directory, you can run:
+- Node.js 22.12 or later (Netlify builds with Node 24, set in `netlify.toml`)
 
-### `yarn start`
+## Run locally
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```sh
+npm install
+npm run dev:netlify
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Open http://localhost:8888. This runs the app through the Netlify CLI, as on Netlify.
 
-### `yarn test`
+If the Netlify CLI is unavailable, use `npm run dev` (http://localhost:5173). Vite serves the same functions from `functions/` directly.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Both use sample data instead of Airtable (`AIRTABLE_MOCK=true`). Saved entries are kept in `dahlia-tracker-mock.json` in your OS temp folder; delete it to reset. To use real Airtable locally, set `AIRTABLE_MOCK=false` plus the variables below.
 
-### `yarn build`
+## Test and build
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```sh
+npm test        # function tests (Airtable is stubbed)
+npm run build   # production build to dist/
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Deploy (Netlify)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Netlify builds from `netlify.toml`. No other build settings are needed.
 
-### `yarn eject`
+Set these in **Site configuration → Environment variables**:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+| Variable | Value |
+| --- | --- |
+| `AIRTABLE_TOKEN` | Airtable Personal Access Token with `data.records:read` and `data.records:write`, limited to this base |
+| `AIRTABLE_BASE` | Base ID (starts with `app`) |
+| `AIRTABLE_TABLE` | Table name |
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The table needs these fields: `Time` (date and time), `Notes` (text), `Pee`, `Poop` and `Accident` (checkboxes).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Functions
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /.netlify/functions/getBathroom?days=30` | Entries from the last N days, newest first. `days=all` returns everything. Without `days`, returns the 10 most recent. |
+| `GET /.netlify/functions/getBathroom?before=<ISO time>` | The 10 newest entries older than that time, newest first. Used by "Load more"; cannot be combined with `days`. |
+| `POST /.netlify/functions/saveBathroom` | Saves one entry: `{ "Time", "Notes", "Pee", "Poop", "Accident" }` |

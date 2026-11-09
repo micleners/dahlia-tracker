@@ -1,6 +1,5 @@
 import PuppyChat from './PuppyChat';
 import HumanChat from './HumanChat';
-import ActionOptions from './ActionOptions';
 import { useDialogDelay } from '../hooks';
 import BathroomOptions from './BathroomOptions';
 
@@ -8,7 +7,7 @@ const Dialog1 = ({ optionSelected }) => {
   const isAccident = optionSelected === 'Accident';
 
   const [ref1, ref2, showDialog2] = useDialogDelay(500);
-  const [ref3, ref4, showDialog3] = useDialogDelay(1000);
+  const [, ref4, showDialog3] = useDialogDelay(1000);
 
   const pupMessage = isAccident
     ? '*sniff* *sniff* Here? '

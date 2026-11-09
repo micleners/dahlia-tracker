@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import human from '../images/boy.png';
+import puppy from '../images/puppy.png';
 import { SpriteChat, ChatBubble } from './HelperChats';
 
-const Human = styled.img`
+const Puppy = styled.img`
   image-rendering: pixelated;
   width: 100px;
 
@@ -13,14 +13,14 @@ const Human = styled.img`
   }
 `;
 
-const HumanChat = React.forwardRef(({ children, message }, ref) => (
-  <SpriteChat justify="flex-start">
-    <Human src={human} alt="Puppy Sprite" />
-    <ChatBubble direction="left" message={message}>
+const PuppyChat = React.forwardRef(({ children, message }, ref) => (
+  <SpriteChat $justify="flex-end">
+    <ChatBubble direction="right" message={message}>
       {children}
     </ChatBubble>
+    <Puppy src={puppy} alt="Puppy Sprite" />
     <span ref={ref} />
   </SpriteChat>
 ));
 
-export default HumanChat;
+export default PuppyChat;

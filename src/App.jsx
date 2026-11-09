@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useRef, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import './style.css';
 import 'nes.css/css/nes.min.css';

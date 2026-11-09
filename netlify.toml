@@ -1,2 +1,11 @@
 [build]
-  functions = "/functions"
+  command = "npm run build"
+  publish = "dist"
+  functions = "functions"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# Local development (`npm run dev:netlify`): serve sample data instead of Airtable.
+[context.dev.environment]
+  AIRTABLE_MOCK = "true"

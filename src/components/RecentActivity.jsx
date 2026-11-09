@@ -6,44 +6,60 @@ const Container = styled.div`
   font-size: 12px;
 `;
 
+// Reuses NES.css's own blink keyframes.
+const Loading = styled.div`
+  margin: 20px 0 40px 0;
+  animation: blink 1s infinite steps(1);
+`;
+
 const ColorClose = styled.div`
   .close::before {
-    color: ${(props) => props.color};
+    color: ${(props) => props.$color};
   }
 `;
 
 const Ex = () => <i className="nes-icon close is-small"></i>;
 
 const RedEx = () => (
-  <ColorClose color="rgb(218 73 72)">
+  <ColorClose $color="rgb(218 73 72)">
     <Ex />
   </ColorClose>
 );
 
 const YellowEx = () => (
-  <ColorClose color="#ffce00">
+  <ColorClose $color="#ffce00">
     <Ex />
   </ColorClose>
 );
 
 const BrownEx = () => (
-  <ColorClose color="rgb(91 54 30)">
+  <ColorClose $color="rgb(91 54 30)">
     <Ex />
   </ColorClose>
 );
 
+// Must match DEFAULT_LIMIT in functions/getBathroom.mjs.
+const PAGE_SIZE = 10;
+
 const RecentActivity = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [visits, setVisits] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadBathroomVisits = async () => {
+      setLoading(true);
       try {
         const res = await fetch('/.netlify/functions/getBathroom');
         const bathroomVisits = await res.json();
         setVisits(bathroomVisits);
+        setHasMore(bathroomVisits.length === PAGE_SIZE);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     if (isOpen === true) {
@@ -67,16 +83,39 @@ const RecentActivity = () => {
     const date = new Date(strDate);
     let month = date.getMonth() + 1;
     let day = date.getDate();
-    const formattedDate = month + '/' + day;
+    const formattedDate = month + '/' + day + '/' + date.getFullYear();
     return formattedDate;
   };
 
   const toggle = () => setIsOpen(!isOpen);
 
+  // Asks for the 10 entries older than the last row shown.
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const last = visits[visits.length - 1];
+      const res = await fetch(
+        `/.netlify/functions/getBathroom?before=${encodeURIComponent(last.time)}`,
+      );
+      if (!res.ok) throw new Error(`Load more failed (${res.status})`);
+      const page = await res.json();
+      setVisits((v) => [...v, ...page]);
+      setHasMore(page.length === PAGE_SIZE);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   return (
-    <Container onClick={toggle}>
-      <div style={{ margin: 20 }}>{isOpen ? 'Hide' : 'Show'} Recent</div>
-      {isOpen ? (
+    <Container>
+      <div style={{ margin: 20, cursor: 'pointer' }} onClick={toggle}>
+        {isOpen ? 'Hide' : 'Show'} Recent
+      </div>
+      {isOpen && loading && visits.length === 0 ? (
+        <Loading>Loading...</Loading>
+      ) : isOpen ? (
         <>
           <div
             style={{ margin: '20px 0 40px 0' }}
@@ -109,6 +148,16 @@ const RecentActivity = () => {
                 ))}
               </tbody>
             </table>
+            {hasMore && (
+              <button
+                type="button"
+                className="nes-btn"
+                disabled={loadingMore}
+                onClick={loadMore}
+              >
+                {loadingMore ? 'Loading...' : 'Load more'}
+              </button>
+            )}
           </div>
         </>
       ) : (
