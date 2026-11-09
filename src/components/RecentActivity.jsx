@@ -6,6 +6,12 @@ const Container = styled.div`
   font-size: 12px;
 `;
 
+// Reuses NES.css's own blink keyframes.
+const Loading = styled.div`
+  margin: 20px 0 40px 0;
+  animation: blink 1s infinite steps(1);
+`;
+
 const ColorClose = styled.div`
   .close::before {
     color: ${(props) => props.$color};
@@ -40,9 +46,11 @@ const RecentActivity = () => {
   const [visits, setVisits] = useState([]);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadBathroomVisits = async () => {
+      setLoading(true);
       try {
         const res = await fetch('/.netlify/functions/getBathroom');
         const bathroomVisits = await res.json();
@@ -50,6 +58,8 @@ const RecentActivity = () => {
         setHasMore(bathroomVisits.length === PAGE_SIZE);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     if (isOpen === true) {
@@ -103,7 +113,9 @@ const RecentActivity = () => {
       <div style={{ margin: 20, cursor: 'pointer' }} onClick={toggle}>
         {isOpen ? 'Hide' : 'Show'} Recent
       </div>
-      {isOpen ? (
+      {isOpen && loading ? (
+        <Loading>Loading...</Loading>
+      ) : isOpen ? (
         <>
           <div
             style={{ margin: '20px 0 40px 0' }}
