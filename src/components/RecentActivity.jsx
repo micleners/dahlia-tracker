@@ -113,7 +113,7 @@ const RecentActivity = () => {
       <div style={{ margin: 20, cursor: 'pointer' }} onClick={toggle}>
         {isOpen ? 'Hide' : 'Show'} Recent
       </div>
-      {isOpen && loading ? (
+      {isOpen && loading && visits.length === 0 ? (
         <Loading>Loading...</Loading>
       ) : isOpen ? (
         <>
