@@ -67,7 +67,7 @@ const RecentActivity = () => {
     const date = new Date(strDate);
     let month = date.getMonth() + 1;
     let day = date.getDate();
-    const formattedDate = month + '/' + day;
+    const formattedDate = month + '/' + day + '/' + date.getFullYear();
     return formattedDate;
   };
 
