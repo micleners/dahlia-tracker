@@ -74,7 +74,7 @@ test('GET days=7', async () => {
   assert.equal(calls[0].url.searchParams.get('filterByFormula'), "DATETIME_DIFF(NOW(),{Time},'days')<=7");
 });
 
-test('GET days=30 explicit', async () => {
+test('GET days=30 uses a day filter instead of the 10-entry limit', async () => {
   replies.push(reply(200, { records: [] }));
   await get('?days=30');
   assert.match(calls[0].url.searchParams.get('filterByFormula'), /<=30$/);
@@ -261,9 +261,10 @@ test('mock mode: serves sample data and keeps saved records', async () => {
 
   const recent = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom'))).json();
   const all = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=all'))).json();
-  const lastMonth = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=30'))).json();
+  const last30Days = await (await getBathroom(new Request('http://x/.netlify/functions/getBathroom?days=30'))).json();
+  // 6 samples, under the 10-entry limit, so the default returns them all.
   assert.equal(recent.length, 6);
-  assert.equal(lastMonth.length, 5);
+  assert.equal(last30Days.length, 5);
   assert.equal(all.length, 6);
 
   const older = await (
